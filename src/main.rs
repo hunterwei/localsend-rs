@@ -3,7 +3,7 @@ use std::{net::Ipv4Addr, path::PathBuf, sync::Arc, time::Duration};
 use clap::Parser;
 use itertools::Itertools;
 use localsend_lib::{
-    scanner::MulticastDeviceScanner,
+    scanner::{LocalDeviceScanner, MulticastDeviceScanner},
     send::{SendError, SendSession, SendingFiles, UploadProgress},
     server::{start_api_server, ClientMessage, ServerMessage, ServerState},
     util::device,
@@ -75,6 +75,17 @@ struct ReceiveArgs {
 
 #[derive(Parser)]
 struct SendArgs {
+    /// Scan device timeout in seconds
+    #[arg(long = "scan-timeout")]
+    scan_timeout: Option<u64>,
+
+    /// Local devices json file path
+    #[arg(
+        long = "devices-json",
+        default_value = "~/.config/localsend/devices.json"
+    )]
+    devices_json_path: PathBuf,
+
     /// Text or file path to be sent
     #[arg(required = true)]
     input: Vec<String>,
@@ -126,6 +137,8 @@ async fn main() -> Result<()> {
 
     let mut send_files = SendingFiles::default();
 
+    let mut scan_timeout: Option<u64> = None;
+    let mut local_scanner: Option<LocalDeviceScanner> = None;
     if let SubCommand::Send(args) = &args.cmd {
         for text in args.input.iter().unique().collect_vec() {
             if let Ok(path) = std::fs::canonicalize(text) {
@@ -139,6 +152,9 @@ async fn main() -> Result<()> {
             }
             send_files.add_text(text, text.len() < 1024);
         }
+
+        scan_timeout = args.scan_timeout;
+        local_scanner = Some(LocalDeviceScanner::new(args.devices_json_path.clone())?);
     }
 
     let (running_tx, mut running_rx) = tokio::sync::mpsc::channel(1);
@@ -158,11 +174,18 @@ async fn main() -> Result<()> {
         });
     }
 
-    let scanner =
-        MulticastDeviceScanner::new(&device, args.multiaddr, args.port, args.http_port).await?;
+    let scanner = MulticastDeviceScanner::new(
+        &device,
+        args.multiaddr,
+        args.port,
+        args.http_port,
+        scan_timeout.map(Duration::from_secs),
+    )
+    .await?;
     let scanner = Arc::new(scanner);
     let mut ui = PromptUI::default();
     ui.use_nerd_fonts = !args.no_nerd;
+    ui.local_scanner = local_scanner;
 
     if args.is_receive_mode() {
         let scanner = scanner.clone();

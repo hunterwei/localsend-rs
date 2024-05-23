@@ -5,7 +5,7 @@ use colored::Colorize;
 use comfy_table::Table;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use localsend_lib::{
-    scanner::MulticastDeviceScanner,
+    scanner::{LocalDeviceScanner, MulticastDeviceScanner},
     send::{SendingFiles, UploadProgress},
     Error, Result,
 };
@@ -84,12 +84,14 @@ pub trait InteractiveUI {
 #[derive(Clone)]
 pub struct PromptUI {
     pub use_nerd_fonts: bool,
+    pub local_scanner: Option<LocalDeviceScanner>,
 }
 
 impl Default for PromptUI {
     fn default() -> Self {
         Self {
             use_nerd_fonts: true,
+            local_scanner: None,
         }
     }
 }
@@ -100,8 +102,14 @@ impl InteractiveUI for PromptUI {
         loop {
             let devices = {
                 let scanner = scanner.clone();
-                self.show_loading("Scanning".to_owned(), async move { scanner.scan().await })
-                    .await?
+                let mut devices = self
+                    .show_loading("Scanning".to_owned(), async move { scanner.scan().await })
+                    .await?;
+
+                if let Some(local_scanner) = &self.local_scanner {
+                    devices.extend(local_scanner.read_local_devices().await?);
+                }
+                devices
             };
 
             use colored::Colorize;

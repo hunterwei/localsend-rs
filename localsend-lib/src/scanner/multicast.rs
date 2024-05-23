@@ -15,10 +15,17 @@ pub struct MulticastDeviceScanner {
     device: MulticastDto,
     addr: SocketAddr,
     announce_msg: String,
+    timeout: Option<Duration>,
 }
 
 impl MulticastDeviceScanner {
-    pub async fn new(device: &Device, multiaddr: Ipv4Addr, port: u16, http_port: u16) -> std::io::Result<Self> {
+    pub async fn new(
+        device: &Device,
+        multiaddr: Ipv4Addr,
+        port: u16,
+        http_port: u16,
+        scan_timeout: Option<Duration>,
+    ) -> std::io::Result<Self> {
         let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
         socket.join_multicast_v4(multiaddr, Ipv4Addr::UNSPECIFIED)?;
 
@@ -37,6 +44,7 @@ impl MulticastDeviceScanner {
             device,
             addr: (multiaddr, port).into(),
             announce_msg,
+            timeout: scan_timeout,
         })
     }
 }
@@ -70,6 +78,8 @@ impl MulticastDeviceScanner {
                     log::trace!("found device: {:?}", device);
                     devices.push(device);
                 }
+            } else if self.timeout.is_some_and(|duration| instant.elapsed() > duration) {
+                break;
             } else {
                 tokio::time::sleep(Duration::from_millis(100)).await;
             }
