@@ -50,6 +50,7 @@ $ localsend receive --quick-save
 - [x] Discovery
     - [x] Multicast UDP
     - [ ] ~~HTTP(Legacy Mode)~~
+    - [x] Local device from file
 - [x] File transfer
     - [x] Send files and texts
     - [ ] Send clipboard data
