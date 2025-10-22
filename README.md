@@ -49,7 +49,7 @@ $ localsend receive --quick-save
     - [ ] Non interactive mode
 - [x] Discovery
     - [x] Multicast UDP
-    - [-] HTTP(Legacy Mode)
+    - [ ] HTTP(Legacy Mode)
 - [x] File transfer
     - [x] Send files and texts
     - [ ] Send clipboard data
@@ -60,6 +60,8 @@ $ localsend receive --quick-save
 - [ ] Reverse file transfer
     - [ ] Browser URL
     - [ ] ~~Receive request~~(not in plan)
+- [ ] Additional API
+    - [-] Info
 
 ## Thanks
 

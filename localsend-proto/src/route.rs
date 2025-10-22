@@ -4,6 +4,7 @@ pub enum ApiRoute {
     PrepareUpload,
     Upload,
     Cancel,
+    Info,
 }
 
 impl ApiRoute {
@@ -20,6 +21,7 @@ impl ApiRoute {
             ApiRoute::PrepareUpload => "send-request",
             ApiRoute::Upload => "send",
             ApiRoute::Cancel => "cancel",
+            ApiRoute::Info => "info",
         }
     }
 

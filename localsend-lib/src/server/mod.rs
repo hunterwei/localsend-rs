@@ -65,6 +65,8 @@ pub async fn start_api_server(port: u16, state: MutexServerState) -> std::io::Re
             .route(&ApiRoute::Upload.v2(), post(upload_v2))
             .route(&ApiRoute::Cancel.v1(), post(cancel_v1))
             .route(&ApiRoute::Cancel.v2(), post(cancel_v2))
+            .route(&ApiRoute::Info.v1(), post(info_v1))
+            .route(&ApiRoute::Info.v2(), post(info_v2))
             .with_state(state)
             .into_make_service_with_connect_info::<SocketAddr>(),
     )
