@@ -19,6 +19,7 @@ use crate::ui::{FileProgressBar, InteractiveUI, PromptUI};
 mod ui;
 
 #[derive(Parser)]
+#[command(version, about = "LocalSend CLI")]
 struct Args {
     /// Alias of localsend, use hostname by default
     #[arg(long, env = "LOCALSEND_ALIAS")]
