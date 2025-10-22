@@ -108,7 +108,7 @@ async fn main() -> Result<()> {
 
     let (server_tx, mut server_rx) = tokio::sync::mpsc::channel(1);
     let (client_tx, client_rx) = tokio::sync::mpsc::channel(1);
-    let mut state = ServerState::new(server_tx, client_rx);
+    let mut state = ServerState::new(device.clone(), server_tx, client_rx);
     {
         let mut settings = Settings::default();
         if let SubCommand::Receive(args) = &args.cmd {

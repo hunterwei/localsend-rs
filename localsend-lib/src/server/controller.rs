@@ -7,7 +7,7 @@ use axum::{
 };
 use futures_util::{pin_mut, TryStreamExt};
 use localsend_proto::{
-    dto::{PrepareUploadRequestDto, PrepareUploadResponseDto},
+    dto::{PrepareUploadRequestDto, PrepareUploadResponseDto, RegisterDto},
     DEFAULT_PORT,
 };
 use tokio::{
@@ -24,6 +24,18 @@ use crate::{
     server::ClientMessage,
     Result,
 };
+
+pub async fn info_v1(State(state): State<MutexServerState>) -> Result<Json<RegisterDto>> {
+    let state = state.lock().await;
+    let register_dto = RegisterDto::from(state.device.clone());
+    Ok(Json(register_dto))
+}
+
+pub async fn info_v2(State(state): State<MutexServerState>) -> Result<Json<RegisterDto>> {
+    let state = state.lock().await;
+    let register_dto = RegisterDto::from(state.device.clone());
+    Ok(Json(register_dto))
+}
 
 pub async fn cancel_v1(State(state): State<MutexServerState>) -> Result<()> {
     let mut state = state.lock().await;

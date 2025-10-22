@@ -60,8 +60,8 @@ $ localsend receive --quick-save
 - [ ] Reverse file transfer
     - [ ] Browser URL
     - [ ] ~~Receive request~~(not in plan)
-- [ ] Additional API
-    - [-] Info
+- [x] Additional API
+    - [x] Info
 
 ## Thanks
 

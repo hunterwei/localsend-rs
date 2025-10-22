@@ -3,8 +3,11 @@ use std::{
     sync::Arc,
 };
 
-use axum::{routing::post, Router};
-use localsend_proto::{dto::FileDto, ApiRoute};
+use axum::{
+    routing::{get, post},
+    Router,
+};
+use localsend_proto::{dto::FileDto, ApiRoute, Device};
 use tokio::{
     net::TcpListener,
     sync::{
@@ -36,6 +39,7 @@ pub enum ServerMessage {
 
 pub struct ServerState {
     pub settings: Settings,
+    pub device: Device,
     pub server_tx: Sender<ServerMessage>,
     pub client_rx: Receiver<ClientMessage>,
     pub receive_session: Option<ReceiveSession>,
@@ -43,9 +47,14 @@ pub struct ServerState {
 }
 
 impl ServerState {
-    pub fn new(server_tx: Sender<ServerMessage>, client_rx: Receiver<ClientMessage>) -> Self {
+    pub fn new(
+        device: Device,
+        server_tx: Sender<ServerMessage>,
+        client_rx: Receiver<ClientMessage>,
+    ) -> Self {
         Self {
             settings: Settings::default(),
+            device,
             server_tx,
             client_rx,
             receive_session: None,
@@ -65,8 +74,8 @@ pub async fn start_api_server(port: u16, state: MutexServerState) -> std::io::Re
             .route(&ApiRoute::Upload.v2(), post(upload_v2))
             .route(&ApiRoute::Cancel.v1(), post(cancel_v1))
             .route(&ApiRoute::Cancel.v2(), post(cancel_v2))
-            .route(&ApiRoute::Info.v1(), post(info_v1))
-            .route(&ApiRoute::Info.v2(), post(info_v2))
+            .route(&ApiRoute::Info.v1(), get(info_v1))
+            .route(&ApiRoute::Info.v2(), get(info_v2))
             .with_state(state)
             .into_make_service_with_connect_info::<SocketAddr>(),
     )
